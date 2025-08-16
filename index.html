@@ -24,8 +24,8 @@
             --text-secondary: #94A3B8;
             --success: #10B981;
             --warning: #F59E0B;
-            --cut-corner: polygon(12px 0, 100% 0, calc(100% - 12px) 100%, 0 100%);
-            --cut-corner-small: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+            --cut-corner: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+            --cut-corner-small: polygon(4px 0, 100% 0, calc(100% - 4px) 100%, 0 100%);
         }
 
         * {
@@ -79,6 +79,16 @@
             clip-path: var(--cut-corner-small);
         }
 
+        /* Fix for button clipping issues */
+        .btn {
+            border-radius: 0;
+            clip-path: none;
+        }
+
+        .btn.cut-corners-small {
+            clip-path: var(--cut-corner-small);
+        }
+
         /* Header */
         .header {
             position: sticky;
@@ -89,13 +99,16 @@
             border-bottom: 1px solid var(--terminal-border);
             padding: clamp(0.75rem, 2vw, 1.25rem);
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
             flex-wrap: wrap;
-            gap: 1rem;
+            gap: 2rem;
+            position: relative;
         }
 
         .logo-section {
+            position: absolute;
+            left: clamp(0.75rem, 2vw, 1.25rem);
             display: flex;
             align-items: center;
             gap: 0.75rem;
@@ -339,10 +352,18 @@
                 flex-direction: column;
                 gap: 0.75rem;
                 text-align: center;
+                justify-content: center;
+                padding: 1rem;
+            }
+            
+            .logo-section {
+                position: static;
+                margin-bottom: 0.5rem;
             }
             
             .header-buttons {
                 justify-content: center;
+                width: 100%;
             }
             
             .controls {
@@ -375,6 +396,7 @@
         </div>
         <div class="header-buttons">
             <button class="btn btn-secondary cut-corners-small" id="twitter-btn">Twitter</button>
+            <a href="https://dexscreener.com/pulsechain" target="_blank" class="btn btn-secondary cut-corners-small">DexScreener</a>
             <a href="https://your-buy-link.example" target="_blank" class="btn btn-primary cut-corners-small">Buy</a>
         </div>
     </header>
@@ -754,4 +776,106 @@
         }
 
         // Show toast notification
-        function showToast
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // Update statistics display
+        function updateStats() {
+            document.getElementById('post-count').textContent = state.postCount;
+            document.getElementById('copy-count').textContent = state.copyCount;
+            document.getElementById('unique-count').textContent = state.uniquePosts.size;
+        }
+
+        // Copy to clipboard with fallback
+        async function copyToClipboard() {
+            if (!state.currentPost || state.isTyping) return;
+            
+            try {
+                await navigator.clipboard.writeText(state.currentPost);
+                state.copyCount++;
+                updateStats();
+                showToast('Copied!');
+            } catch (err) {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = state.currentPost;
+                textArea.style.position = 'fixed';
+                textArea.style.opacity = '0';
+                document.body.appendChild(textArea);
+                textArea.select();
+                
+                try {
+                    document.execCommand('copy');
+                    state.copyCount++;
+                    updateStats();
+                    showToast('Copied!');
+                } catch (fallbackErr) {
+                    showToast('Copy failed - select and copy manually');
+                }
+                
+                document.body.removeChild(textArea);
+            }
+        }
+
+        // Clear terminal output
+        function clearOutput() {
+            const element = document.getElementById('post-content');
+            element.innerHTML = 'Ready to generate bullish PulseChain content...<span class="cursor"></span>';
+            state.currentPost = '';
+            state.isTyping = false;
+        }
+
+        // Open Twitter intent
+        function openTwitter() {
+            if (!state.currentPost) return;
+            const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(state.currentPost)}`;
+            window.open(url, '_blank');
+        }
+
+        // Generate and display new post
+        async function handleGenerate() {
+            if (state.isTyping) return;
+            
+            const post = generatePost();
+            state.currentPost = post;
+            state.postCount++;
+            updateStats();
+            
+            await typeWriter(post);
+        }
+
+        // Event listeners
+        document.getElementById('generate-btn').addEventListener('click', handleGenerate);
+        document.getElementById('copy-btn').addEventListener('click', copyToClipboard);
+        document.getElementById('clear-btn').addEventListener('click', clearOutput);
+        document.getElementById('twitter-btn').addEventListener('click', openTwitter);
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+            
+            switch (e.key.toLowerCase()) {
+                case 'g':
+                    e.preventDefault();
+                    handleGenerate();
+                    break;
+                case 'c':
+                    e.preventDefault();
+                    copyToClipboard();
+                    break;
+                case 'x':
+                    e.preventDefault();
+                    clearOutput();
+                    break;
+            }
+        });
+
+        // Initialize
+        updateStats();
+    </script>
+</body>
+</html>
