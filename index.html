@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>$CTRLV - PulseChain Post Generator</title>
+    <meta name="description" content="Generate bullish PulseChain posts with $CTRLV - the copy-and-post engine for PLS community">
+    <meta property="og:title" content="$CTRLV - PulseChain Post Generator">
+    <meta property="og:description" content="Terminal-style generator for bullish PulseChain content">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="$CTRLV - PulseChain Post Generator">
+    <meta name="twitter:description" content="Generate bullish PulseChain posts instantly">
+    
+    <style>
+        :root {
+            --purple: #8B5CF6;
+            --magenta: #EC4899;
+            --cyan: #06B6D4;
+            --dark-bg: #0A0E1A;
+            --terminal-bg: #151922;
+            --terminal-border: #1F2937;
+            --text-primary: #F8FAFC;
+            --text-secondary: #94A3B8;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --cut-corner: polygon(12px 0, 100% 0, calc(100% - 12px) 100%, 0 100%);
+            --cut-corner-small: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(var(--purple)20 1px, transparent 1px),
+                linear-gradient(90deg, var(--purple)20 1px, transparent 1px),
+                radial-gradient(circle at 25% 25%, var(--magenta)15 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, var(--cyan)15 0%, transparent 50%);
+            background-size: 24px 24px, 24px 24px, 200px 200px, 200px 200px;
+            opacity: 0.4;
+            z-index: -1;
+            animation: grid-float 8s ease-in-out infinite;
+        }
+
+        @keyframes grid-float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); opacity: 0.4; }
+            50% { transform: translate(2px, -2px) rotate(0.5deg); opacity: 0.6; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            body::before { animation: none; }
+            * { transition: none !important; animation: none !important; }
+        }
+
+        .cut-corners {
+            clip-path: var(--cut-corner);
+        }
+
+        .cut-corners-small {
+            clip-path: var(--cut-corner-small);
+        }
+
+        /* Header */
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: linear-gradient(135deg, var(--terminal-bg)95%, var(--purple)10%);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--terminal-border);
+            padding: clamp(0.75rem, 2vw, 1.25rem);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 700;
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            background: linear-gradient(45deg, var(--purple), var(--magenta), var(--cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 20px var(--purple)30;
+        }
+
+        .logo-section img {
+            width: clamp(20px, 4vw, 28px);
+            height: clamp(20px, 4vw, 28px);
+            filter: drop-shadow(0 0 8px var(--cyan)50);
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            padding: clamp(0.4rem, 1.5vw, 0.6rem) clamp(0.8rem, 3vw, 1.2rem);
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 180ms cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: clamp(0.8rem, 2vw, 0.9rem);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(45deg, transparent, var(--cyan)20, transparent);
+            transform: translateX(-100%);
+            transition: transform 300ms ease;
+        }
+
+        .btn:hover::before {
+            transform: translateX(100%);
+        }
+
+        .btn:focus-visible {
+            outline: 2px solid var(--cyan);
+            outline-offset: 3px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--purple), var(--magenta));
+            color: white;
+            box-shadow: 0 4px 15px var(--purple)30;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 6px 25px var(--purple)50, 0 0 20px var(--magenta)40;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--terminal-border);
+            color: var(--text-primary);
+            border: 1px solid var(--terminal-border);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: var(--text-secondary);
+            box-shadow: 0 4px 15px var(--cyan)30;
+            transform: translateY(-1px);
+        }
+
+        /* Main Layout */
+        .container {
+            max-width: min(900px, 95vw);
+            margin: clamp(1rem, 4vw, 3rem) auto;
+            padding: 0 clamp(0.5rem, 2vw, 1rem);
+        }
+
+        .terminal {
+            background: var(--terminal-bg);
+            border: 2px solid var(--terminal-border);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.6),
+                0 0 0 1px var(--purple)10,
+                inset 0 1px 0 var(--text-secondary)10;
+            position: relative;
+        }
+
+        .terminal::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--purple)20, var(--magenta)20, var(--cyan)20);
+            z-index: -1;
+            clip-path: var(--cut-corner);
+        }
+
+        .terminal-header {
+            background: linear-gradient(135deg, var(--terminal-border), var(--purple)20);
+            padding: clamp(0.5rem, 2vw, 0.75rem) clamp(0.75rem, 3vw, 1rem);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid var(--terminal-border);
+        }
+
+        .terminal-dot {
+            width: clamp(8px, 2vw, 12px);
+            height: clamp(8px, 2vw, 12px);
+            border-radius: 50%;
+            box-shadow: 0 0 8px currentColor;
+        }
+
+        .dot-red { background: #EF4444; }
+        .dot-yellow { background: #F59E0B; }
+        .dot-green { background: var(--success); }
+
+        .terminal-title {
+            margin-left: auto;
+            font-size: clamp(0.7rem, 1.8vw, 0.85rem);
+            color: var(--text-secondary);
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 0 10px var(--cyan)30;
+        }
+
+        .terminal-output {
+            padding: clamp(1rem, 3vw, 2rem);
+            min-height: clamp(180px, 25vh, 250px);
+            font-family: 'Courier New', monospace;
+            font-size: clamp(0.8rem, 2vw, 0.95rem);
+            line-height: 1.6;
+            background: 
+                radial-gradient(circle at top left, var(--purple)05 0%, transparent 50%),
+                radial-gradient(circle at bottom right, var(--cyan)05 0%, transparent 50%),
+                var(--dark-bg);
+            position: relative;
+        }
+
+        .terminal-output::before {
+            content: '$ ./ctrlv-generator.sh';
+            display: block;
+            color: var(--cyan);
+            margin-bottom: 1.2rem;
+            text-shadow: 0 0 10px var(--cyan)50;
+        }
+
+        .post-content {
+            color: var(--text-primary);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1.2em;
+            background: var(--cyan);
+            animation: blink 1.2s infinite;
+            vertical-align: text-bottom;
+            box-shadow: 0 0 8px var(--cyan);
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .status-bar {
+            background: linear-gradient(135deg, var(--terminal-border), var(--purple)10);
+            padding: clamp(0.4rem, 1.5vw, 0.6rem) clamp(0.75rem, 3vw, 1rem);
+            font-family: 'Courier New', monospace;
+            font-size: clamp(0.7rem, 1.8vw, 0.8rem);
+            color: var(--text-secondary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            border-top: 1px solid var(--terminal-border);
+            border-bottom: 1px solid var(--terminal-border);
+        }
+
+        .controls {
+            padding: clamp(0.75rem, 2.5vw, 1.2rem);
+            display: flex;
+            gap: clamp(0.4rem, 1.5vw, 0.6rem);
+            flex-wrap: wrap;
+            background: var(--terminal-bg);
+        }
+
+        .controls .btn {
+            flex: 1;
+            min-width: clamp(80px, 20vw, 120px);
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: clamp(1.5rem, 4vw, 3rem);
+            color: var(--text-secondary);
+            font-size: clamp(0.8rem, 2vw, 0.9rem);
+            background: linear-gradient(45deg, var(--purple)05, var(--cyan)05);
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: clamp(15px, 3vw, 25px);
+            right: clamp(15px, 3vw, 25px);
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+            padding: clamp(0.5rem, 2vw, 0.75rem) clamp(0.75rem, 3vw, 1.2rem);
+            font-weight: 600;
+            font-size: clamp(0.8rem, 2vw, 0.9rem);
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        /* Mobile Optimization */
+        @media (max-width: 640px) {
+            .header {
+                flex-direction: column;
+                gap: 0.75rem;
+                text-align: center;
+            }
+            
+            .header-buttons {
+                justify-content: center;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .controls .btn {
+                min-width: auto;
+            }
+            
+            .status-bar {
+                flex-direction: column;
+                text-align: center;
+                gap: 0.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .terminal-output {
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header cut-corners">
+        <div class="logo-section">
+            <img src="logo.png" alt="$CTRLV logo">
+            <span>$CTRLV</span>
+        </div>
+        <div class="header-buttons">
+            <button class="btn btn-secondary cut-corners-small" id="twitter-btn">Twitter</button>
+            <a href="https://your-buy-link.example" target="_blank" class="btn btn-primary cut-corners-small">Buy</a>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="terminal cut-corners">
+            <div class="terminal-header">
+                <div class="terminal-dot dot-red"></div>
+                <div class="terminal-dot dot-yellow"></div>
+                <div class="terminal-dot dot-green"></div>
+                <div class="terminal-title">ctrlv-generator v2.0</div>
+            </div>
+            
+            <div class="terminal-output" id="output">
+                <div class="post-content" id="post-content">Ready to generate bullish PulseChain content...<span class="cursor"></span></div>
+            </div>
+            
+            <div class="status-bar">
+                <div>Posts: <span id="post-count">0</span> • Copies: <span id="copy-count">0</span></div>
+                <div>Unique this session: <span id="unique-count">0</span></div>
+            </div>
+            
+            <div class="controls">
+                <button class="btn btn-primary cut-corners-small" id="generate-btn">Generate Post</button>
+                <button class="btn btn-secondary cut-corners-small" id="copy-btn">Copy</button>
+                <button class="btn btn-secondary cut-corners-small" id="clear-btn">Clear</button>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        Made for PulseChain • $CTRLV
+    </footer>
+
+    <div class="toast cut-corners-small" id="toast">Copied!</div>
+
+    <script>
+        // State management
+        const state = {
+            postCount: 0,
+            copyCount: 0,
+            uniquePosts: new Set(),
+            currentPost: '',
+            isTyping: false
+        };
+
+        // Content pools - each with 40+ items for maximum combinatorial variety
+        const content = {
+            openings: [
+                "PulseChain momentum compounds daily",
+                "PLS keeps attracting serious builders",
+                "On-chain metrics favor PulseChain growth",
+                "Liquidity follows conviction on PLS",
+                "PulseChain velocity stays remarkably consistent",
+                "PLS infrastructure deepens every week",
+                "Builder activity clusters around PulseChain",
+                "PulseChain fundamentals strengthen continuously",
+                "PLS network effects accelerate naturally",
+                "Technical progress compounds on PulseChain",
+                "PLS adoption curves steepen organically",
+                "PulseChain utility expands at pace",
+                "Developer momentum shifts toward PLS",
+                "PulseChain throughput advantage widens",
+                "Smart money accumulates PLS positions",
+                "PulseChain ecosystem velocity increases",
+                "Institutional interest in PLS grows",
+                "PulseChain market structure improves",
+                "PLS token mechanics prove resilient",
+                "PulseChain community strength builds",
+                "Technical analysis favors PLS trajectory",
+                "PulseChain innovation rate climbs steadily",
+                "Market depth on PLS expands consistently",
+                "PulseChain protocol upgrades deliver value",
+                "PLS staking rewards compound efficiently",
+                "PulseChain governance participation rises",
+                "Network security on PLS hardens progressively",
+                "PulseChain user experience improves rapidly",
+                "PLS transaction volume grows organically",
+                "Developer tools on PulseChain mature quickly",
+                "PulseChain cross-chain bridges strengthen",
+                "PLS yield opportunities multiply naturally",
+                "PulseChain scalability solutions deploy smoothly",
+                "DeFi protocols migrate to PLS ecosystem",
+                "PulseChain documentation improves continuously",
+                "PLS community initiatives launch successfully",
+                "PulseChain partnerships expand strategically",
+                "Developer grants on PLS increase substantially",
+                "PulseChain mobile support enhances rapidly",
+                "PLS wallet integrations multiply consistently",
+                "PulseChain educational content grows exponentially",
+                "Hackathons on PLS attract top talent",
+                "PulseChain analytics tools improve steadily",
+                "PLS validator participation climbs upward"
+            ],
+            
+            claims: [
+                "fees stay low while throughput scales exponentially",
+                "dev velocity increases every development cycle",
+                "ecosystem reflexes sharpen with each update",
+                "infrastructure strengthens through every upgrade",
+                "user adoption curves steepen with momentum",
+                "liquidity pools deepen across all sectors",
+                "smart contracts execute with perfect reliability",
+                "cross-chain bridges operate seamlessly",
+                "validator participation grows steadily upward",
+                "transaction finality improves consistently",
+                "network security hardens through every block",
+                "developer experience enhances rapidly",
+                "protocol upgrades deploy without issues",
+                "community governance matures organically",
+                "staking rewards compound efficiently",
+                "yield farming opportunities multiply exponentially",
+                "DeFi protocols integrate smoothly",
+                "NFT marketplaces thrive naturally",
+                "gaming applications perform exceptionally",
+                "institutional adoption accelerates quarterly",
+                "retail interest compounds organically",
+                "technical analysis stays consistently bullish",
+                "fundamental metrics strengthen daily",
+                "competitive advantages widen systematically",
+                "innovation cycles shorten dramatically",
+                "partnerships form through strategic alignment",
+                "documentation improves with each release",
+                "educational resources expand freely",
+                "community support grows organically",
+                "developer tools mature at lightning pace",
+                "mobile integration advances smoothly",
+                "wallet support increases steadily",
+                "analytics capabilities enhance rapidly",
+                "monitoring tools improve consistently",
+                "security audits pass without issues",
+                "performance benchmarks exceed targets regularly",
+                "energy efficiency optimizes naturally",
+                "carbon footprint minimizes progressively",
+                "regulatory clarity improves gradually",
+                "compliance frameworks strengthen continuously",
+                "institutional custody solutions deploy successfully",
+                "enterprise adoption patterns emerge clearly",
+                "academic research validates technical benefits",
+                "real-world usage patterns validate design"
+            ],
+            
+            proofs: [
+                "users migrate to faster cheaper blockspace",
+                "capital gravitates toward speed and efficiency",
+                "bots and tools stack alpha on PLS",
+                "creators ship their projects here first",
+                "validators stake for superior long-term yields",
+                "developers migrate from legacy chains",
+                "institutional flows increase each quarter",
+                "retail adoption metrics trend consistently upward",
+                "on-chain analytics confirm sustainable growth",
+                "network effects compound exponentially",
+                "community engagement metrics rise steadily",
+                "transaction volume grows month over month",
+                "total value locked expands rapidly",
+                "active addresses increase consistently",
+                "smart contract deployments multiply weekly",
+                "cross-chain volume flows inward naturally",
+                "staking participation rates climb upward",
+                "validator count grows steadily",
+                "developer commits increase weekly",
+                "GitHub activity accelerates naturally",
+                "hackathon submissions multiply consistently",
+                "grant applications surge each cycle",
+                "partnership announcements increase regularly",
+                "media coverage expands organically",
+                "social metrics trend positively",
+                "technical documentation improves continuously",
+                "educational content proliferates rapidly",
+                "wallet integrations expand at pace",
+                "exchange listings multiply steadily",
+                "market maker activity increases substantially",
+                "arbitrage opportunities decrease naturally",
+                "price volatility stabilizes gradually",
+                "trading volume grows consistently",
+                "yield opportunities compound exponentially",
+                "liquidity mining rewards attract capital",
+                "governance proposals pass regularly",
+                "community votes participate actively",
+                "protocol revenue increases monthly",
+                "treasury reserves grow steadily",
+                "burn mechanisms reduce circulating supply",
+                "deflationary pressure builds naturally",
+                "store of value properties emerge clearly",
+                "medium of exchange adoption grows",
+                "institutional custody options multiply"
+            ],
+            
+            ctas: [
+                "copy and paste with $CTRLV",
+                "reply and keep the thread alive",
+                "share and bring one friend along",
+                "stack signal across all your feeds",
+                "amplify reach through community power",
+                "spread awareness organically",
+                "build momentum collectively",
+                "engage and drive meaningful discussion",
+                "retweet and add your commentary",
+                "quote tweet with valuable insights",
+                "thread and expand the context",
+                "bookmark and share later",
+                "tag relevant influencers respectfully",
+                "cross-post to other platforms",
+                "create derivative content pieces",
+                "screenshot and share as stories",
+                "email to interested parties",
+                "discuss in Discord servers",
+                "post in Telegram groups",
+                "share in Reddit communities",
+                "add to newsletter content",
+                "include in blog posts",
+                "mention in podcast episodes",
+                "reference in video content",
+                "cite in research papers",
+                "quote in presentations",
+                "link in technical documentation",
+                "embed in educational materials",
+                "feature in community updates",
+                "highlight in weekly recaps",
+                "pin important announcements",
+                "boost algorithmic reach",
+                "increase engagement rates naturally",
+                "drive organic discovery",
+                "enhance content distribution",
+                "maximize viral potential",
+                "optimize for shareability",
+                "encourage active user participation",
+                "facilitate sustainable community growth",
+                "support ecosystem development",
+                "contribute to positive network effects",
+                "strengthen brand awareness organically",
+                "build lasting community relationships",
+                "foster meaningful developer connections"
+            ],
+            
+            hashtags: [
+                "#PulseChain", "#PLS", "#DeFi", "#OnChain", "#Crypto", 
+                "#Builder", "#Reply", "#CTRLV", "#Web3", "#Blockchain",
+                "#Ethereum", "#Layer1", "#Scaling", "#LowFees", "#FastTx",
+                "#Staking", "#Yield", "#Community", "#BullRun", "#HODL",
+                "#TechnicalAnalysis", "#Fundamentals", "#Innovation", "#Growth",
+                "#Adoption", "#Developers", "#Ecosystem", "#Protocol", "#Alpha",
+                "#DeFiSummer", "#Altcoin", "#SmartContract", "#Validator", "#DAO"
+            ],
+            
+            templates: [
+                "{OPENING}. {CLAIM}. {PROOF}. $CTRLV is the copy-and-post engine for PulseChain. {CTA} {TAGS}",
+                "On PulseChain, {CLAIM}. {PROOF}. {OPENING}. Amplify reach with $CTRLV. {CTA} {TAGS}",
+                "PLS advantage is real: {CLAIM}. {PROOF}. {OPENING}. Use $CTRLV and {CTA}. {TAGS}",
+                "{OPENING}. This is why {CLAIM}. {PROOF}. Share via $CTRLV. {CTA} {TAGS}",
+                "PulseChain update: {CLAIM}. {PROOF}. {OPENING}. $CTRLV makes spreading this effortless. {CTA} {TAGS}",
+                "{CLAIM} on PulseChain. {PROOF}. {OPENING}. Copy-paste with $CTRLV. {CTA} {TAGS}",
+                "Why PLS wins: {CLAIM}. {PROOF}. {OPENING}. Amplify with $CTRLV and {CTA}. {TAGS}"
+            ]
+        };
+
+        // Spintax parser for nested choices and optional segments
+        function parseSpintax(text) {
+            // Handle nested choices {a|b|c} with unlimited depth
+            while (text.includes('{') && text.includes('}')) {
+                text = text.replace(/\{([^{}]+)\}/g, (match, choices) => {
+                    const options = choices.split('|').map(opt => opt.trim());
+                    return options[Math.floor(secureRandom() * options.length)];
+                });
+            }
+            
+            // Handle optional segments [text]
+            text = text.replace(/\[([^\]]+)\]/g, (match, optional) => {
+                return secureRandom() > 0.5 ? optional : '';
+            });
+            
+            return text;
+        }
+
+        // Secure random number generator with fallback
+        function secureRandom() {
+            if (window.crypto && window.crypto.getRandomValues) {
+                const array = new Uint32Array(1);
+                window.crypto.getRandomValues(array);
+                return array[0] / (0xFFFFFFFF + 1);
+            }
+            return Math.random();
+        }
+
+        // Random array element selection
+        function randomChoice(array) {
+            return array[Math.floor(secureRandom() * array.length)];
+        }
+
+        // Generate hashtags (1-2 per post)
+        function generateHashtags() {
+            const count = Math.floor(secureRandom() * 2) + 1;
+            const selected = [];
+            const available = [...content.hashtags];
+            
+            for (let i = 0; i < count && available.length > 0; i++) {
+                const index = Math.floor(secureRandom() * available.length);
+                selected.push(available.splice(index, 1)[0]);
+            }
+            
+            return selected.join(' ');
+        }
+
+        // Generate post with validation loop
+        function generatePost() {
+            let attempts = 0;
+            const maxAttempts = 20;
+            
+            while (attempts < maxAttempts) {
+                attempts++;
+                
+                // Select random template and fill slots
+                let post = randomChoice(content.templates);
+                
+                post = post.replace('{OPENING}', randomChoice(content.openings));
+                post = post.replace('{CLAIM}', randomChoice(content.claims));
+                post = post.replace('{PROOF}', randomChoice(content.proofs));
+                post = post.replace('{CTA}', randomChoice(content.ctas));
+                post = post.replace('{TAGS}', generateHashtags());
+                
+                // Parse any spintax patterns
+                post = parseSpintax(post);
+                
+                // Clean up spacing and punctuation
+                post = post.replace(/\s+/g, ' ').trim();
+                post = post.replace(/\.+/g, '.');
+                post = post.replace(/\s*\.\s*/g, '. ');
+                post = post.replace(/\.\s*$/, '');
+                
+                // Validation checks
+                const hasLength = post.length >= 140 && post.length <= 230;
+                const hasPulseChain = /PulseChain|PLS/.test(post);
+                const ctrlvMatches = (post.match(/\$CTRLV/g) || []).length;
+                const hasCtrlv = ctrlvMatches >= 1 && ctrlvMatches <= 2;
+                const isUnique = !state.uniquePosts.has(post);
+                
+                if (hasLength && hasPulseChain && hasCtrlv && isUnique) {
+                    state.uniquePosts.add(post);
+                    return post;
+                }
+            }
+            
+            // Fallback if all attempts fail
+            return "PulseChain momentum compounds daily. Fees stay low while throughput scales exponentially. Users migrate to faster cheaper blockspace. $CTRLV is the copy-and-post engine for PulseChain. Copy and paste with $CTRLV. #PulseChain #PLS";
+        }
+
+        // Typewriter effect with motion preference respect
+        async function typeWriter(text) {
+            const element = document.getElementById('post-content');
+            const cursor = element.querySelector('.cursor');
+            
+            if (cursor) cursor.remove();
+            
+            element.textContent = '';
+            state.isTyping = true;
+            
+            const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const delay = prefersReducedMotion ? 0 : 25;
+            
+            if (delay === 0) {
+                element.textContent = text;
+            } else {
+                for (let i = 0; i < text.length; i++) {
+                    element.textContent = text.substring(0, i + 1);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    if (!state.isTyping) break; // Allow interruption
+                }
+            }
+            
+            // Add cursor back
+            const newCursor = document.createElement('span');
+            newCursor.className = 'cursor';
+            element.appendChild(newCursor);
+            
+            state.isTyping = false;
+        }
+
+        // Show toast notification
+        function showToast
